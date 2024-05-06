@@ -1,4 +1,5 @@
 mod renderer;
+
 use renderer::DrawLine;
 
 mod shaders;
@@ -55,7 +56,7 @@ pub fn main() {
 
         // Render triangle
         for line in &state.lines {
-            renderer.draw_polyline(line, 8.0);
+            renderer.draw_polyline(line, 32.0);
         }
 
         // Swap buffers (present what we just drew)
@@ -90,7 +91,22 @@ fn process_events(window: &mut glfw::Window, state: &mut State, events: &GlfwRec
             glfw::WindowEvent::CursorPos(x, y) => {
                 // Handle adding points
                 if state.mouse_held {
-                    state.lines.last_mut().unwrap().push((x as f32, y as f32));
+                    let current_line = state.lines.last_mut().unwrap();
+
+                    // Is there a previous point?
+                    if current_line.len() > 0 {
+                        // Get previous point
+                        let prev_point = current_line.last().unwrap();
+
+                        // Check distance
+                        let distance = f32::sqrt(f32::powf(x as f32 - prev_point.0, 2.0) + f32::powf(y as f32 - prev_point.1, 2.0));
+
+                        if distance > 4.0 {
+                            state.lines.last_mut().unwrap().push((x as f32, y as f32));
+                        }
+                    } else {
+                        state.lines.last_mut().unwrap().push((x as f32, y as f32));
+                    }
                 }
             },
 
