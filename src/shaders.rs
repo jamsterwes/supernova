@@ -4,8 +4,8 @@ extern crate gl;
 use self::gl::types::*;
 
 use std::ffi::CString;
-use std::str;
 use std::ptr;
+use std::str;
 
 // Function to construct a basic vertex+fragment program
 pub fn build_vertex_fragment(vertex_src: &str, fragment_src: &str) -> GLuint {

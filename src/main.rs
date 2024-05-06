@@ -1,7 +1,11 @@
-mod window;
+mod renderer;
+use renderer::Draw;
+
 mod shaders;
+mod window;
 
 extern crate glfw;
+
 use self::glfw::{Context, Key, Action, GlfwReceiver};
 
 extern crate gl;
@@ -23,23 +27,27 @@ pub fn main() {
         title: String::from(SCR_TITLE),
     });
 
-    // Load shaders
-    let program = shaders::build_vertex_fragment(
-        include_str!("shaders/triangle.vert"), 
-        include_str!("shaders/triangle.frag")
-    );
+    // Create renderer
+    let renderer = renderer::create_renderer();
 
     // Render loop
     while !window.should_close() {
         // Process events
         process_events(&mut window, &events);
 
-        // Swap and poll
+        // Clear background
         unsafe { 
-            gl::ClearColor(0.0, 1.0, 1.0, 1.0);
+            gl::ClearColor(0.0, 0.0, 0.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
+
+        // Render triangle
+        renderer.draw();
+
+        // Swap buffers (present what we just drew)
         window.swap_buffers();
+
+        // Poll for events
         glfw.poll_events();
     }
 }
