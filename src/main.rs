@@ -56,7 +56,7 @@ pub fn main() {
 
         // Render triangle
         for line in &state.lines {
-            renderer.draw_polyline(line, 32.0);
+            renderer.draw_polyline(line, 8.0);
         }
 
         // Swap buffers (present what we just drew)
