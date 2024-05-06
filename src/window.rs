@@ -32,9 +32,9 @@ pub fn create_window(glfw: &mut glfw::Glfw, settings: WindowSettings) -> (glfw::
     // Set context to current
     window.make_current();
 
-    // TODO:
-    // window.set_key_polling(true);
-    // window.set_framebuffer_size_polling(true);
+    // Set what events to poll
+    window.set_key_polling(true);
+    window.set_framebuffer_size_polling(true);
 
     // Load OpenGL function pointers into window
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
