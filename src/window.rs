@@ -1,4 +1,5 @@
 extern crate glfw;
+
 use self::glfw::Context;
 
 extern crate gl;
@@ -34,6 +35,8 @@ pub fn create_window(glfw: &mut glfw::Glfw, settings: WindowSettings) -> (glfw::
 
     // Set what events to poll
     window.set_key_polling(true);
+    window.set_cursor_pos_polling(true);
+    window.set_mouse_button_polling(true);
     window.set_framebuffer_size_polling(true);
 
     // Load OpenGL function pointers into window

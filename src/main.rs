@@ -1,5 +1,5 @@
 mod renderer;
-use renderer::Draw;
+use renderer::DrawLine;
 
 mod shaders;
 mod window;
@@ -15,6 +15,12 @@ const SCR_WIDTH: u32 = 1280;
 const SCR_HEIGHT: u32 = 720;
 const SCR_TITLE: &'static str = "supernova";
 
+// Store state
+struct State {
+    lines: Vec<Vec<(f32, f32)>>,
+    mouse_held: bool,
+}
+
 // Entrypoint
 pub fn main() {
     // Init GLFW
@@ -28,12 +34,18 @@ pub fn main() {
     });
 
     // Create renderer
-    let renderer = renderer::create_renderer();
+    let renderer = renderer::create_line_renderer();
+
+    // Store state
+    let mut state = State {
+        lines: Vec::new(),
+        mouse_held: false,
+    };
 
     // Render loop
     while !window.should_close() {
         // Process events
-        process_events(&mut window, &events);
+        process_events(&mut window, &mut state, &events);
 
         // Clear background
         unsafe { 
@@ -42,7 +54,9 @@ pub fn main() {
         }
 
         // Render triangle
-        renderer.draw();
+        for line in &state.lines {
+            renderer.draw_polyline(line, 8.0);
+        }
 
         // Swap buffers (present what we just drew)
         window.swap_buffers();
@@ -53,7 +67,7 @@ pub fn main() {
 }
 
 // Function for handling events
-fn process_events(window: &mut glfw::Window, events: &GlfwReceiver<(f64, glfw::WindowEvent)>) {
+fn process_events(window: &mut glfw::Window, state: &mut State, events: &GlfwReceiver<(f64, glfw::WindowEvent)>) {
     // Loop through all flushed messages
     for (_, event) in glfw::flush_messages(events) {
         // Match events by type
@@ -62,6 +76,23 @@ fn process_events(window: &mut glfw::Window, events: &GlfwReceiver<(f64, glfw::W
             glfw::WindowEvent::FramebufferSize(width, height) => {
                 unsafe { gl::Viewport(0, 0, width, height) };
             }
+
+            // Click events
+            glfw::WindowEvent::MouseButton(glfw::MouseButtonLeft, action, _) => {
+                if action == Action::Press {
+                    state.mouse_held = true;
+                    state.lines.push(Vec::new());
+                } else {
+                    state.mouse_held = false;
+                }
+            },
+
+            glfw::WindowEvent::CursorPos(x, y) => {
+                // Handle adding points
+                if state.mouse_held {
+                    state.lines.last_mut().unwrap().push((x as f32, y as f32));
+                }
+            },
 
             // Key events
             glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => window.set_should_close(true),

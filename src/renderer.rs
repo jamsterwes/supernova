@@ -5,26 +5,39 @@ extern crate glfw;
 extern crate gl;
 use self::gl::types::*;
 
-use std::ffi::c_void;
+use std::ffi::{c_void, CString};
 use std::mem;
 use std::ptr;
 
-// Temporary
-pub struct Renderer {
+// Class for rendering lines
+pub struct LineRenderer {
     // TODO: move these things
     vao: GLuint,
 
     // Store shader program
     shader: GLuint,
+
+    // Store from uniform
+    uniform_from: GLint,
+
+    // Store to uniform
+    uniform_to: GLint,
+
+    // Store resolution uniform
+    uniform_resolution: GLint,
+
+    // Store line width uniform
+    uniform_width: GLint,
 }
 
-pub trait Draw {
-    fn draw(&self);
+pub trait DrawLine {
+    fn draw_line(&self, from: (f32, f32), to: (f32, f32), line_width: f32);
+    fn draw_polyline(&self, coords: &Vec<(f32, f32)>, line_width: f32);
 }
 
 // Implement draw for renderer
-impl Draw for Renderer {
-    fn draw(&self) {
+impl DrawLine for LineRenderer {
+    fn draw_line(&self, from: (f32, f32), to: (f32, f32), line_width: f32) {
         unsafe {
             // Use the shader program
             gl::UseProgram(self.shader);
@@ -32,19 +45,42 @@ impl Draw for Renderer {
             // Bind the vao
             gl::BindVertexArray(self.vao);
 
+            // Set from/to uniforms
+            gl::Uniform2f(self.uniform_from, from.0, from.1);
+            gl::Uniform2f(self.uniform_to, to.0, to.1);
+
+            // Set resolution uniform (TODO: get this elsewhere)
+            gl::Uniform2f(self.uniform_resolution, 1280.0, 720.0);
+
+            // Set line width
+            gl::Uniform1f(self.uniform_width, line_width);
+
             // Draw triangle
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl::DrawArrays(gl::TRIANGLE_STRIP, 0, 4);
+        }
+    }
+
+    fn draw_polyline(&self, coords: &Vec<(f32, f32)>, line_width: f32) {
+        // If less than 2 coords, ignore
+        if coords.len() < 2 {
+            return;
+        }
+
+        // Draw lines
+        for pair in coords.windows(2) {
+            self.draw_line(pair[0], pair[1], line_width);
         }
     }
 }
 
-// Function to create the renderer
-pub fn create_renderer() -> Renderer {
+// Function to create the line renderer
+pub fn create_line_renderer() -> LineRenderer {
     // Define vertices
-    let vertices: [f32; 9] = [
-        -0.5, -0.5, 0.0, // left
-        0.5, -0.5, 0.0, // right
-        0.0,  0.5, 0.0  // top
+    let vertices: [f32; 12] = [
+        0.0, -0.5, 0.0,  // BL
+        0.0, 0.5, 0.0,   // TL
+        1.0, -0.5, 0.0,   // BR
+        1.0, 0.5, 0.0,    // TR
     ];
 
     // Build VAO
@@ -81,8 +117,8 @@ pub fn create_renderer() -> Renderer {
 
     // Load shaders
     let program = shaders::build_vertex_fragment(
-        include_str!("shaders/triangle.vert"), 
-        include_str!("shaders/triangle.frag")
+        include_str!("shaders/line.vert"), 
+        include_str!("shaders/line.frag")
     );
 
     // Now unbind vbo, vao
@@ -92,8 +128,18 @@ pub fn create_renderer() -> Renderer {
     }
 
     // Create renderer
-    return Renderer {
+    return LineRenderer {
         vao: vao,
-        shader: program
+        shader: program,
+        uniform_from: get_uniform_location(program, "from"),
+        uniform_to: get_uniform_location(program, "to"),
+        uniform_resolution: get_uniform_location(program, "resolution"),
+        uniform_width: get_uniform_location(program, "width"),
     }
+}
+
+// Helper function to get uniform location
+fn get_uniform_location(program: GLuint, name: &str) -> GLint {
+    let c_name = CString::new(name).unwrap();
+    return unsafe { gl::GetUniformLocation(program, c_name.as_ptr()) };
 }
