@@ -12,8 +12,8 @@ use self::glfw::{Context, Key, Action, GlfwReceiver};
 extern crate gl;
 
 // Settings
-const SCR_WIDTH: u32 = 1280;
-const SCR_HEIGHT: u32 = 720;
+const SCR_WIDTH: u32 = 1024;
+const SCR_HEIGHT: u32 = 1024;
 const SCR_TITLE: &'static str = "supernova";
 
 // Store state

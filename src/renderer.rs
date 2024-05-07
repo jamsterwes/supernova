@@ -50,7 +50,7 @@ impl DrawLine for LineRenderer {
             gl::Uniform2f(self.uniform_to, to.0, to.1);
 
             // Set resolution uniform (TODO: get this elsewhere)
-            gl::Uniform2f(self.uniform_resolution, 1280.0, 720.0);
+            gl::Uniform2f(self.uniform_resolution, crate::SCR_WIDTH as f32, crate::SCR_HEIGHT as f32);
 
             // Set line width
             gl::Uniform1f(self.uniform_width, line_width);
