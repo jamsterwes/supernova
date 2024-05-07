@@ -20,9 +20,9 @@ pub fn create_grid_texture() -> GLuint {
 
     // Set texture size/format
     unsafe {
-        let mut data: Vec<GLubyte> = vec![0; 4 * width as usize * height as usize];
+        let mut data: Vec<f32> = vec![0.0; 4 * width as usize * height as usize];
         gl::BindTexture(gl::TEXTURE_2D, tex_id);
-        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, width, height, 0, gl::RGBA, gl::UNSIGNED_BYTE, data.as_mut_ptr() as *mut c_void);
+        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA32F as i32, width, height, 0, gl::RGBA, gl::FLOAT, data.as_mut_ptr() as *mut c_void);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
     }
@@ -32,9 +32,9 @@ pub fn create_grid_texture() -> GLuint {
 }
 
 // Function to write one pixel to grid texture (not efficient)
-pub fn write_grid_texture_patch(tex_id: GLuint, x: usize, y: usize, width: usize, height: usize, px_data: (GLubyte, GLubyte, GLubyte, GLubyte)) {
+pub fn write_grid_texture_patch(tex_id: GLuint, x: usize, y: usize, width: usize, height: usize, px_data: (f32, f32, f32, f32)) {
     // Allocate texture data
-    let mut data: Vec<GLubyte> = vec![0; 4 * width as usize * height as usize];
+    let mut data: Vec<f32> = vec![0.0; 4 * width as usize * height as usize];
 
     // Fill patch
     for y in 0..height {
@@ -49,6 +49,6 @@ pub fn write_grid_texture_patch(tex_id: GLuint, x: usize, y: usize, width: usize
     // Now upload patch
     unsafe {
         gl::BindTexture(gl::TEXTURE_2D, tex_id);
-        gl::TexSubImage2D(gl::TEXTURE_2D, 0, x as i32, y as i32, width as i32, height as i32, gl::RGBA, gl::UNSIGNED_BYTE, data.as_mut_ptr() as *mut c_void);
+        gl::TexSubImage2D(gl::TEXTURE_2D, 0, x as i32, y as i32, width as i32, height as i32, gl::RGBA, gl::FLOAT, data.as_mut_ptr() as *mut c_void);
     }
 }

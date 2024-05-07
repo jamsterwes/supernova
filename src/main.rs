@@ -18,7 +18,7 @@ const SCR_TITLE: &'static str = "supernova";
 
 // Store state
 struct State {
-    neutron_tex: GLuint,
+    neutron_vel_tex: GLuint,
     mouse_held: bool,
 }
 
@@ -39,7 +39,7 @@ pub fn main() {
 
     // Store state
     let mut state = State {
-        neutron_tex: rendering::textures::create_grid_texture(),
+        neutron_vel_tex: rendering::textures::create_grid_texture(),
         mouse_held: false,
     };
 
@@ -55,7 +55,7 @@ pub fn main() {
         }
 
         // Render neutron grid
-        neutron_renderer.render_grid(state.neutron_tex);
+        neutron_renderer.render_grid(state.neutron_vel_tex);
 
         // Swap buffers (present what we just drew)
         window.swap_buffers();
@@ -88,8 +88,9 @@ fn process_events(window: &mut glfw::Window, state: &mut State, events: &GlfwRec
             glfw::WindowEvent::CursorPos(x, y) => {
                 // Handle adding points
                 if state.mouse_held {
-                    // Add point to neutron grid
-                    rendering::textures::write_grid_texture_patch(state.neutron_tex, x as usize, y as usize, 8, 8, (255, 255, 255, 255));
+                    // Add patch to neutron velocity grid
+                    // (for now use up velocity)
+                    rendering::textures::write_grid_texture_patch(state.neutron_vel_tex, x as usize, y as usize, 8, 8, (0.5, 0.0, 0.0, 0.0));
                 }
             },
 

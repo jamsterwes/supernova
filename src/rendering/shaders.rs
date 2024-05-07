@@ -18,6 +18,16 @@ pub fn build_vertex_fragment(vertex_src: &str, fragment_src: &str) -> GLuint {
     return program;
 }
 
+// Function to construct a compute shader program
+pub fn build_compute(compute_src: &str) -> GLuint {
+    // Compile shader
+    let compute = unsafe { compile_shader(gl::COMPUTE_SHADER, compute_src.to_string()) };
+
+    // Link program
+    let program = unsafe { link_program(vec![compute]) };
+    return program;
+}
+
 // Helper function to get uniform location
 pub fn get_uniform_location(program: GLuint, name: &str) -> GLint {
     let c_name = CString::new(name).unwrap();
