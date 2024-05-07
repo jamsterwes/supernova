@@ -1,8 +1,8 @@
-mod renderer;
+mod rendering;
 
-use renderer::DrawLine;
+use gl::types::GLuint;
+use rendering::general::RenderGrid;
 
-mod shaders;
 mod window;
 
 extern crate glfw;
@@ -18,7 +18,7 @@ const SCR_TITLE: &'static str = "supernova";
 
 // Store state
 struct State {
-    lines: Vec<Vec<(f32, f32)>>,
+    neutron_tex: GLuint,
     mouse_held: bool,
 }
 
@@ -34,12 +34,12 @@ pub fn main() {
         title: String::from(SCR_TITLE),
     });
 
-    // Create renderer
-    let renderer = renderer::create_line_renderer();
+    // Create neutron grid renderer
+    let neutron_renderer = rendering::general::make_grid_renderer(include_str!("../shaders/grids/test_grid.frag"));
 
     // Store state
     let mut state = State {
-        lines: Vec::new(),
+        neutron_tex: rendering::textures::create_grid_texture(),
         mouse_held: false,
     };
 
@@ -54,10 +54,8 @@ pub fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        // Render triangle
-        for line in &state.lines {
-            renderer.draw_polyline(line, 8.0);
-        }
+        // Render neutron grid
+        neutron_renderer.render_grid(state.neutron_tex);
 
         // Swap buffers (present what we just drew)
         window.swap_buffers();
@@ -80,33 +78,18 @@ fn process_events(window: &mut glfw::Window, state: &mut State, events: &GlfwRec
 
             // Click events
             glfw::WindowEvent::MouseButton(glfw::MouseButtonLeft, action, _) => {
-                if action == Action::Press {
-                    state.mouse_held = true;
-                    state.lines.push(Vec::new());
-                } else {
+                if action == glfw::Action::Release {
                     state.mouse_held = false;
+                } else {
+                    state.mouse_held = true;
                 }
             },
 
             glfw::WindowEvent::CursorPos(x, y) => {
                 // Handle adding points
                 if state.mouse_held {
-                    let current_line = state.lines.last_mut().unwrap();
-
-                    // Is there a previous point?
-                    if current_line.len() > 0 {
-                        // Get previous point
-                        let prev_point = current_line.last().unwrap();
-
-                        // Check distance
-                        let distance = f32::sqrt(f32::powf(x as f32 - prev_point.0, 2.0) + f32::powf(y as f32 - prev_point.1, 2.0));
-
-                        if distance > 4.0 {
-                            state.lines.last_mut().unwrap().push((x as f32, y as f32));
-                        }
-                    } else {
-                        state.lines.last_mut().unwrap().push((x as f32, y as f32));
-                    }
+                    // Add point to neutron grid
+                    rendering::textures::write_grid_texture_patch(state.neutron_tex, x as usize, y as usize, 8, 8, (255, 255, 255, 255));
                 }
             },
 

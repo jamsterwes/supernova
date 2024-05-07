@@ -18,6 +18,12 @@ pub fn build_vertex_fragment(vertex_src: &str, fragment_src: &str) -> GLuint {
     return program;
 }
 
+// Helper function to get uniform location
+pub fn get_uniform_location(program: GLuint, name: &str) -> GLint {
+    let c_name = CString::new(name).unwrap();
+    return unsafe { gl::GetUniformLocation(program, c_name.as_ptr()) };
+}
+
 // Function to link shaders into a program
 unsafe fn link_program(shaders: Vec<GLuint>) -> GLuint {
     // Create shader program
