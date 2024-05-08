@@ -23,8 +23,10 @@ pub fn create_grid_texture() -> GLuint {
         let mut data: Vec<f32> = vec![0.0; 4 * width as usize * height as usize];
         gl::BindTexture(gl::TEXTURE_2D, tex_id);
         gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA32F as i32, width, height, 0, gl::RGBA, gl::FLOAT, data.as_mut_ptr() as *mut c_void);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
     }
 
     // Return texture ID
@@ -50,5 +52,17 @@ pub fn write_grid_texture_patch(tex_id: GLuint, x: usize, y: usize, width: usize
     unsafe {
         gl::BindTexture(gl::TEXTURE_2D, tex_id);
         gl::TexSubImage2D(gl::TEXTURE_2D, 0, x as i32, y as i32, width as i32, height as i32, gl::RGBA, gl::FLOAT, data.as_mut_ptr() as *mut c_void);
+    }
+}
+
+// Function to copy tex A->B
+pub fn copy_grid_texture(tex_src_id: GLuint, tex_dest_id: GLuint) {
+    // Use screen resolution
+    let width = crate::SCR_WIDTH as i32;
+    let height = crate::SCR_HEIGHT as i32;
+
+    // Copy
+    unsafe {
+        gl::CopyImageSubData(tex_src_id, gl::TEXTURE_2D, 0, 0, 0, 0, tex_dest_id, gl::TEXTURE_2D, 0, 0, 0, 0, width, height, 1);
     }
 }

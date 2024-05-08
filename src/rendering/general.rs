@@ -19,6 +19,9 @@ pub struct GridRenderer {
 
     // Store tex uniform
     uniform_tex: GLint,
+
+    // Store resolution uniform
+    uniform_resolution: GLint,
 }
 
 // Trait for rendering a grid
@@ -85,6 +88,7 @@ pub fn make_grid_renderer(frag_src: &str) -> GridRenderer {
         vao: vao,
         shader: program,
         uniform_tex: shaders::get_uniform_location(program, "tex"),
+        uniform_resolution: shaders::get_uniform_location(program, "resolution"),
     }
 }
 
@@ -102,6 +106,9 @@ impl RenderGrid for GridRenderer {
         // (potentially unnecessary)
         // Set tex uniform to 0
         unsafe { gl::Uniform1ui(self.uniform_tex, 0) };
+
+        // Set resolution uniform
+        unsafe { gl::Uniform2f(self.uniform_resolution, crate::SCR_WIDTH as f32, crate::SCR_HEIGHT as f32) }
 
         // Draw quad
         unsafe { gl::DrawArrays(gl::TRIANGLE_STRIP, 0, 4) };

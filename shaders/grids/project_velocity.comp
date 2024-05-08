@@ -1,0 +1,52 @@
+#version 440 core
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(rgba32f, binding = 0) uniform image2D velocity_READ;
+layout(rgba32f, binding = 1) uniform image2D velocity_WRITE;
+
+// left, right, top, bottom
+vec4 ReadEdges(ivec2 coords) {
+    vec4 velC = imageLoad(velocity_READ, coords);
+    vec4 velL = imageLoad(velocity_READ, coords - ivec2(1,0));
+    vec4 velT = imageLoad(velocity_READ, coords + ivec2(0,1));
+    return vec4(velL.x, velC.x, velT.y, velC.y);
+}
+
+vec2 EdgesToVelocity(vec4 edges) {
+    return vec2(edges.r + edges.g, edges.b + edges.a);
+}
+
+void WriteEdges(ivec2 coords, vec4 edges) {
+    // Get originals
+    vec4 velL = imageLoad(velocity_READ, coords - ivec2(1,0));
+    vec4 velT = imageLoad(velocity_READ, coords + ivec2(0,1));
+
+    // Make updates
+    velL.x = edges.x;
+    velT.y = edges.z;
+
+    // Write updates
+    imageStore(velocity_WRITE, coords, vec4(edges.yw, 0, 0));
+    imageStore(velocity_WRITE, coords - ivec2(1,0), velL);
+    imageStore(velocity_WRITE, coords + ivec2(0,1), velT);
+}
+
+void main() {
+    ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
+    
+    // Step 1: Take current velocity (in px/sec)
+    vec4 edges = ReadEdges(texelCoords);
+    
+    // Step 2: Calculate divergence
+    float D = edges.y - edges.x + edges.w - edges.z;
+
+    // Step 3: Update edges
+    edges.x += D / 4.0;
+    edges.y -= D / 4.0;
+    edges.z += D / 4.0;
+    edges.w -= D / 4.0;
+
+    // Step 4: Apply new edges
+    WriteEdges(texelCoords, edges);
+}

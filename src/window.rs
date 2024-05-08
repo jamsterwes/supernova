@@ -39,6 +39,8 @@ pub fn create_window(glfw: &mut glfw::Glfw, settings: WindowSettings) -> (glfw::
     window.set_mouse_button_polling(true);
     window.set_framebuffer_size_polling(true);
 
+    glfw.set_swap_interval(glfw::SwapInterval::Sync(1));
+
     // Load OpenGL function pointers into window
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
