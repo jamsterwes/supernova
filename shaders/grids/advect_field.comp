@@ -1,0 +1,30 @@
+#version 440 core
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+uniform float dt;
+
+layout(binding = 0) uniform sampler2D velocity_READ;
+layout(binding = 1) uniform sampler2D field_READ;
+layout(rgba32f, binding = 2) uniform image2D field_WRITE;
+
+// Sample a texture2D like an image2D
+vec4 textureLoad(sampler2D tex, vec2 coords) {
+    ivec2 size = textureSize(tex, 0);
+    return texture(tex, coords/vec2(size));
+}
+
+void main() {
+    vec2 texelCoords = vec2(gl_GlobalInvocationID.xy);
+    
+    // Step 1: Get velocity
+    vec2 V = texelFetch(velocity_READ, ivec2(texelCoords), 0).xy;
+
+    // Step 3: Get source coords
+    vec2 sourceCoords = texelCoords - V;
+
+    // Step 4: Read source + write to original
+    vec4 fieldTex = textureLoad(field_READ, sourceCoords);
+    vec4 fieldSrc = textureLoad(field_READ, sourceCoords);
+    imageStore(field_WRITE, ivec2(texelCoords), fieldTex + fieldSrc);
+}

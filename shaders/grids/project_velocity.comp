@@ -13,10 +13,6 @@ vec4 ReadEdges(ivec2 coords) {
     return vec4(velL.x, velC.x, velT.y, velC.y);
 }
 
-vec2 EdgesToVelocity(vec4 edges) {
-    return vec2(edges.r + edges.g, edges.b + edges.a);
-}
-
 void WriteEdges(ivec2 coords, vec4 edges) {
     // Get originals
     vec4 velL = imageLoad(velocity_READ, coords - ivec2(1,0));
@@ -39,13 +35,13 @@ void main() {
     vec4 edges = ReadEdges(texelCoords);
     
     // Step 2: Calculate divergence
-    float D = edges.y - edges.x + edges.w - edges.z;
+    float D = edges.y - edges.x - edges.w + edges.z;
 
     // Step 3: Update edges
     edges.x += D / 4.0;
     edges.y -= D / 4.0;
-    edges.z += D / 4.0;
-    edges.w -= D / 4.0;
+    edges.z -= D / 4.0;
+    edges.w += D / 4.0;
 
     // Step 4: Apply new edges
     WriteEdges(texelCoords, edges);

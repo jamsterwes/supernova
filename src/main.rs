@@ -12,8 +12,8 @@ extern crate gl;
 use simulation::{Simulatable, Simulation};
 
 // Settings
-const SCR_WIDTH: u32 = 1024;
-const SCR_HEIGHT: u32 = 1024;
+const SCR_WIDTH: u32 = 1920;
+const SCR_HEIGHT: u32 = 1080;
 const SCR_TITLE: &'static str = "supernova";
 
 // Store state
@@ -103,14 +103,14 @@ fn process_events(window: &mut glfw::Window, state: &mut State, events: &GlfwRec
                 // Handle adding velocity
                 if state.mousel_held {
                     // Write a particle
-                    rendering::textures::write_grid_texture_patch(state.simulation.velocity, x as usize, y as usize, 8, 8, (6.0, 0.0, 0.0, 0.0));
+                    rendering::textures::write_grid_texture_patch(state.simulation.velocity, x as usize, y as usize, 8, 8, (1.0, 0.0, 0.0, 0.0));
                     // rendering::textures::write_grid_texture_patch(state.simulation.mass, x as usize, y as usize, 8, 8, (0.0, 0.5, 1.0, 0.0));
                 }
 
                 // Handle adding mass
                 if state.mouser_held {
                     // Write a particle
-                    rendering::textures::write_grid_texture_patch(state.simulation.velocity, x as usize, y as usize, 8, 8, (0.0, 6.0, 0.0, 0.0));
+                    rendering::textures::write_grid_texture_patch(state.simulation.velocity, x as usize, y as usize, 8, 8, (0.0, 1.0, 0.0, 0.0));
                     // rendering::textures::write_grid_texture_patch(state.simulation.mass, x as usize, y as usize, 8, 8, (0.0, 1.0, 0.5, 0.0));
                 }
             },
