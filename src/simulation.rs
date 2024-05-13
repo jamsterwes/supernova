@@ -1,5 +1,4 @@
 extern crate gl;
-use std::ffi::c_void;
 
 use gl::types::GLuint;
 
