@@ -12,7 +12,15 @@ void main() {
 
     // Calculate clipping
     float d = length(gl_FragCoord.xy - position - vec2(0.5, 0.5));
-    if (d > radius) discard;
 
-    FragColor = color;
+    // For smoothing (in px)
+    const float S = 1.5;
+    
+    // Set alpha
+    float remap = (d - (radius - S)) / S;
+    remap = clamp(remap, 0, 1);
+
+    float alpha = smoothstep(1.0, 0.0, remap);
+
+    FragColor = vec4(color.rgb, color.a * alpha);
 }

@@ -44,5 +44,11 @@ pub fn create_window(glfw: &mut glfw::Glfw, settings: WindowSettings) -> (glfw::
     // Load OpenGL function pointers into window
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
+    // Enable blending
+    unsafe {
+        gl::Enable(gl::BLEND);
+        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+    }
+
     return (window, events);
 }

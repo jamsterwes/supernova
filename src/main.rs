@@ -8,9 +8,9 @@ mod window;
 
 extern crate glfw;
 use glfw::{Context, Key, Action, GlfwReceiver};
+use simulation::particles::{create_simulation, Simulatable};
 
 extern crate gl;
-// use simulation::{Simulatable, Simulation};
 
 // Settings
 const SCR_WIDTH: u32 = 1920;
@@ -29,6 +29,9 @@ pub fn main() {
         title: String::from(SCR_TITLE),
     });
 
+    // Create a simulation
+    let mut sim = create_simulation();
+
     // Create a circle renderer
     let circle_renderer = create_circle_renderer();
 
@@ -41,22 +44,11 @@ pub fn main() {
         (256.0, 128.0),
         (208.0, 401.0),
     ];
-    let radii: Vec<f32> = vec![
-        20.0,
-        18.0,
-        15.0,
-        44.0,
-        64.0,
-        100.0,
-    ];
-    let colors: Vec<(f32, f32, f32, f32)> = vec![
-        (1.0, 0.0, 0.0, 1.0),
-        (0.0, 1.0, 0.0, 1.0),
-        (0.0, 0.0, 1.0, 1.0),
-        (1.0, 1.0, 0.0, 1.0),
-        (1.0, 0.0, 1.0, 1.0),
-        (0.0, 1.0, 1.0, 1.0),
-    ];
+    
+    // Populate simulation
+    for pos in positions {
+        sim.add_particle_with_momentum(pos, 5.0, (10.0, 10.0));
+    }
 
     // Render loop
     while !window.should_close() {
@@ -68,9 +60,14 @@ pub fn main() {
             gl::ClearColor(0.0, 0.0, 0.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
+
+        // Simulate
+        sim.simulate();
         
-        // Render circle
-        circle_renderer.draw_multi(&positions, &radii, &colors);
+        // Draw simulation
+        for particle in &sim.particles {
+            circle_renderer.draw(particle.position, 16.0, (1.0, 0.0, 0.0, 1.0))
+        }
 
         // Swap buffers (present what we just drew)
         window.swap_buffers();
